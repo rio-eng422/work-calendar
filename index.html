@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1f2937" />
+  <title>2026年度 勤務カレンダー</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --sun:#fca5a5;
+      --holiday:#fca5a5;
+      --company:#bfdbfe;
+      --recommended:#a3e635;
+      --today:#111827;
+      --border:#d1d5db;
+      --accent:#2563eb;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Sans","Yu Gothic UI","YuGothic",Meiryo,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:#111827;
+      color:#fff;
+      padding:14px 16px 12px;
+      box-shadow:0 2px 8px rgba(0,0,0,.15);
+    }
+    .title{
+      font-size:20px;
+      font-weight:700;
+      margin:0 0 10px;
+    }
+    .sub{
+      font-size:12px;
+      opacity:.9;
+      margin:0 0 12px;
+    }
+    .toolbar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    button{
+      border:none;
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:14px;
+      font-weight:700;
+      background:#e5e7eb;
+      color:#111827;
+    }
+    button.primary{background:#3b82f6;color:#fff}
+    button.ghost{
+      background:rgba(255,255,255,.14);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.15);
+    }
+    .month-tabs{
+      display:flex;
+      gap:8px;
+      overflow:auto;
+      padding:12px 16px 4px;
+      scroll-snap-type:x proximity;
+      background:var(--bg);
+      position:sticky;
+      top:105px;
+      z-index:15;
+    }
+    .month-tab{
+      flex:0 0 auto;
+      scroll-snap-align:start;
+      border:1px solid var(--border);
+      background:#fff;
+      color:#111827;
+      border-radius:999px;
+      padding:9px 12px;
+      font-size:13px;
+      font-weight:700;
+    }
+    .month-tab.active{
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+    }
+    main{
+      padding:12px 14px 100px;
+      max-width:720px;
+      margin:0 auto;
+    }
+    .card{
+      background:var(--card);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 6px 20px rgba(0,0,0,.08);
+      margin-bottom:14px;
+    }
+    .month-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:end;
+      margin-bottom:10px;
+    }
+    .month-title h2{
+      margin:0;
+      font-size:24px;
+    }
+    .count{
+      color:var(--muted);
+      font-size:13px;
+      font-weight:700;
+    }
+    .weekdays,.grid{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:6px;
+    }
+    .weekdays div{
+      text-align:center;
+      font-weight:700;
+      font-size:12px;
+      color:var(--muted);
+      padding-bottom:4px;
+    }
+    .day{
+      min-height:52px;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:6px 4px;
+      position:relative;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      font-weight:700;
+      font-size:16px;
+    }
+    .day.empty{
+      background:#f9fafb;
+      color:#d1d5db;
+    }
+    .day.sun{background:var(--sun)}
+    .day.company{background:var(--company)}
+    .day.holiday{background:var(--holiday)}
+    .day.recommended::after{
+      content:"";
+      position:absolute;
+      width:34px;height:26px;
+      border-radius:999px;
+      background:rgba(163,230,53,.88);
+      border:2px solid rgba(17,24,39,.55);
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      z-index:0;
+    }
+    .day span{position:relative; z-index:1}
+    .day.today{
+      outline:3px solid var(--today);
+      outline-offset:1px;
+    }
+    .legend{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+      font-size:14px;
+    }
+    .legend-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .swatch{
+      width:22px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.15);
+      flex:0 0 auto;
+    }
+    .swatch.sun{background:var(--sun)}
+    .swatch.company{background:var(--company)}
+    .swatch.recommended{background:var(--recommended); border-radius:999px; height:18px}
+    ul.holidays{
+      margin:10px 0 0;
+      padding-left:18px;
+    }
+    ul.holidays li{
+      margin:4px 0;
+      line-height:1.5;
+    }
+    .footer-note{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">2026年度 勤務カレンダー</div>
+    <div class="sub">スマホ向け表示 / ホーム画面追加対応</div>
+    <div class="toolbar">
+      <button id="jumpToday" class="primary">今月へ</button>
+      <button id="toggleYear" class="ghost">年間一覧</button>
+    </div>
+  </header>
+
+  <div class="month-tabs" id="monthTabs"></div>
+
+  <main id="app"></main>
+
+<script>
+const calendarData = {
+  yearLabel: "2026年度",
+  months: [
+    {year: 2026, month: 4, holidays: {"2026-04-29":"昭和の日"}, company: [], recommended: []},
+    {year: 2026, month: 5, holidays: {"2026-05-03":"憲法記念日","2026-05-04":"みどりの日","2026-05-05":"こどもの日","2026-05-06":"振替休日（5/3分）"}, company: [], recommended: []},
+    {year: 2026, month: 6, holidays: {}, company: [], recommended: []},
+    {year: 2026, month: 7, holidays: {"2026-07-20":"海の日"}, company: [], recommended: ["2026-07-20"]},
+    {year: 2026, month: 8, holidays: {"2026-08-11":"山の日"}, company: [], recommended: []},
+    {year: 2026, month: 9, holidays: {"2026-09-21":"敬老の日","2026-09-22":"国民の休日","2026-09-23":"秋分の日"}, company: [], recommended: ["2026-09-21"]},
+    {year: 2026, month: 10, holidays: {"2026-10-12":"スポーツの日"}, company: [], recommended: ["2026-10-12"]},
+    {year: 2026, month: 11, holidays: {"2026-11-03":"文化の日","2026-11-23":"勤労感謝の日"}, company: [], recommended: ["2026-11-03"]},
+    {year: 2026, month: 12, holidays: {}, company: [], recommended: []},
+    {year: 2027, month: 1, holidays: {"2027-01-01":"元日","2027-01-11":"成人の日"}, company: [], recommended: []},
+    {year: 2027, month: 2, holidays: {"2027-02-11":"建国記念の日","2027-02-23":"天皇誕生日"}, company: [], recommended: ["2027-02-23"]},
+    {year: 2027, month: 3, holidays: {"2027-03-21":"春分の日","2027-03-22":"振替休日（3/21分）"}, company: [], recommended: []},
+  ]
+};
+
+const weekdayLabels = ["日","月","火","水","木","金","土"];
+const app = document.getElementById("app");
+const monthTabs = document.getElementById("monthTabs");
+let yearMode = false;
+
+function ymd(y,m,d){
+  return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+}
+
+function buildTabs(){
+  calendarData.months.forEach((m, index) => {
+    const btn = document.createElement("button");
+    btn.className = "month-tab";
+    btn.textContent = `${m.month}月`;
+    btn.onclick = () => {
+      document.getElementById(`month-${index}`).scrollIntoView({behavior:"smooth", block:"start"});
+      setActiveTab(index);
+    };
+    btn.id = `tab-${index}`;
+    monthTabs.appendChild(btn);
+  });
+}
+
+function setActiveTab(index){
+  [...monthTabs.children].forEach((el,i)=>el.classList.toggle("active", i===index));
+}
+
+function render(){
+  app.innerHTML = "";
+
+  const legend = document.createElement("section");
+  legend.className = "card";
+  legend.innerHTML = `
+    <div class="legend">
+      <div class="legend-item"><span class="swatch sun"></span><span>日曜・祝日</span></div>
+      <div class="legend-item"><span class="swatch company"></span><span>会社独自の休日</span></div>
+      <div class="legend-item"><span class="swatch recommended"></span><span>有給休暇推奨日（7/20・9/21・10/12・11/3・2/23）</span></div>
+    </div>
+    <p class="footer-note">※ 元画像をもとに再構成しています。会社独自の休日は、今回の画像では明確に判別できる日がなかったため未反映です。必要なら後から追加できます。</p>
+  `;
+  app.appendChild(legend);
+
+  calendarData.months.forEach((m, index) => {
+    const card = document.createElement("section");
+    card.className = "card month-card";
+    card.id = `month-${index}`;
+
+    const firstDay = new Date(m.year, m.month - 1, 1);
+    const lastDate = new Date(m.year, m.month, 0).getDate();
+    const startWeekday = firstDay.getDay();
+    const cells = [];
+
+    for(let i=0; i<startWeekday; i++) cells.push({empty:true});
+    for(let d=1; d<=lastDate; d++) cells.push({day:d});
+    while(cells.length % 7 !== 0) cells.push({empty:true});
+
+    const holidayEntries = Object.entries(m.holidays).sort(([a],[b]) => a.localeCompare(b));
+
+    card.innerHTML = `
+      <div class="month-title">
+        <h2>${m.year}年${m.month}月</h2>
+        <div class="count">${lastDate}日まで</div>
+      </div>
+      <div class="weekdays">${weekdayLabels.map(w => `<div>${w}</div>`).join("")}</div>
+      <div class="grid">
+        ${cells.map(c => {
+          if(c.empty) return `<div class="day empty"></div>`;
+          const key = ymd(m.year, m.month, c.day);
+          const dateObj = new Date(m.year, m.month - 1, c.day);
+          const isSun = dateObj.getDay() === 0;
+          const isHoliday = Boolean(m.holidays[key]);
+          const isCompany = m.company.includes(key);
+          const isRecommended = m.recommended.includes(key);
+          const now = new Date();
+          const isToday = now.getFullYear() === m.year && (now.getMonth()+1) === m.month && now.getDate() === c.day;
+          const cls = [
+            "day",
+            isSun ? "sun" : "",
+            isHoliday ? "holiday" : "",
+            isCompany ? "company" : "",
+            isRecommended ? "recommended" : "",
+            isToday ? "today" : ""
+          ].filter(Boolean).join(" ");
+          return `<div class="${cls}"><span>${c.day}</span></div>`;
+        }).join("")}
+      </div>
+      <ul class="holidays">
+        ${holidayEntries.length ? holidayEntries.map(([date, name]) => `<li>${date.slice(8)}日 ${name}</li>`).join("") : "<li>祝日なし</li>"}
+      </ul>
+    `;
+    app.appendChild(card);
+  });
+}
+
+function jumpToCurrentFiscalMonth(){
+  const now = new Date();
+  let index = calendarData.months.findIndex(m => m.year === now.getFullYear() && m.month === now.getMonth() + 1);
+  if(index === -1) index = 0;
+  const target = document.getElementById(`month-${index}`);
+  if(target){
+    target.scrollIntoView({behavior:"smooth", block:"start"});
+    setActiveTab(index);
+  }
+}
+
+document.getElementById("jumpToday").addEventListener("click", jumpToCurrentFiscalMonth);
+
+document.getElementById("toggleYear").addEventListener("click", () => {
+  yearMode = !yearMode;
+  document.querySelectorAll(".month-card").forEach(card => {
+    card.classList.toggle("hidden", false);
+  });
+  if(yearMode){
+    document.querySelectorAll(".month-card").forEach((card, i) => {
+      if(i !== 0 && i !== 1 && i !== 2 && i !== 3 && i !== 4 && i !== 5 && i !== 6 && i !== 7 && i !== 8 && i !== 9 && i !== 10 && i !== 11){}
+    });
+    document.getElementById("toggleYear").textContent = "月別表示";
+    document.querySelectorAll(".month-card").forEach(card => {
+      card.style.padding = "10px";
+    });
+    document.querySelectorAll(".grid").forEach(grid => grid.style.gap = "3px");
+    document.querySelectorAll(".day").forEach(day => {
+      day.style.minHeight = "34px";
+      day.style.fontSize = "12px";
+      day.style.borderRadius = "8px";
+    });
+  } else {
+    document.getElementById("toggleYear").textContent = "年間一覧";
+    document.querySelectorAll(".month-card").forEach(card => card.style.padding = "14px");
+    document.querySelectorAll(".grid").forEach(grid => grid.style.gap = "6px");
+    document.querySelectorAll(".day").forEach(day => {
+      day.style.minHeight = "52px";
+      day.style.fontSize = "16px";
+      day.style.borderRadius = "14px";
+    });
+  }
+});
+
+buildTabs();
+render();
+setActiveTab(0);
+
+const observer = new IntersectionObserver((entries) => {
+  const visible = entries.filter(e => e.isIntersecting).sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+  if(visible){
+    const index = Number(visible.target.id.replace("month-",""));
+    setActiveTab(index);
+  }
+}, {rootMargin:"-30% 0px -55% 0px", threshold:[0.2,0.5,0.8]});
+
+window.addEventListener("load", () => {
+  document.querySelectorAll(".month-card").forEach(card => observer.observe(card));
+});
+</script>
+</body>
+</html>
