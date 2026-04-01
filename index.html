@@ -17,8 +17,11 @@
       --recommended:#a3e635;
       --border:#d1d5db;
       --accent:#2563eb;
+      --today:#111827;
+      --notice:#dbeafe;
     }
     *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
     body{
       margin:0;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Hiragino Sans","Yu Gothic UI","YuGothic",Meiryo,sans-serif;
@@ -26,7 +29,7 @@
       color:var(--text);
     }
     header{
-      position:sticky; top:0; z-index:20;
+      position:sticky; top:0; z-index:30;
       background:#111827; color:#fff;
       padding:14px 16px 12px;
       box-shadow:0 2px 8px rgba(0,0,0,.15);
@@ -34,20 +37,68 @@
     .title{font-size:20px;font-weight:700;margin:0 0 8px}
     .sub{font-size:12px;opacity:.9;margin:0 0 12px}
     .toolbar{display:flex;gap:8px;flex-wrap:wrap}
-    button{
+    button, select{
       border:none;border-radius:999px;padding:10px 14px;font-size:14px;font-weight:700;
       background:#e5e7eb;color:#111827;
     }
     button.primary{background:#3b82f6;color:#fff}
+    select{
+      border:1px solid rgba(255,255,255,.18);
+      background:#fff;
+      appearance:none;
+      -webkit-appearance:none;
+      max-width:160px;
+    }
     .month-tabs{
-      display:flex;gap:8px;overflow:auto;padding:12px 16px 4px;
-      background:var(--bg); position:sticky; top:98px; z-index:15;
+      display:flex;gap:8px;overflow:auto;padding:10px 16px 8px;
+      background:var(--bg); position:sticky; top:98px; z-index:22;
+      border-bottom:1px solid rgba(0,0,0,.04);
     }
     .month-tab{
       flex:0 0 auto; border:1px solid var(--border); background:#fff; color:#111827;
       border-radius:999px; padding:9px 12px; font-size:13px; font-weight:700;
     }
     .month-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .notice-wrap{
+      position:sticky; top:149px; z-index:21;
+      padding:8px 12px 0;
+      background:linear-gradient(var(--bg), rgba(243,244,246,.95));
+    }
+    .notice{
+      max-width:720px; margin:0 auto;
+      background:var(--notice);
+      border:1px solid #93c5fd;
+      color:#1e3a8a;
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:13px;
+      font-weight:700;
+      box-shadow:0 4px 10px rgba(0,0,0,.04);
+    }
+    .fixed-legend-wrap{
+      position:sticky; top:202px; z-index:20;
+      padding:8px 12px 0;
+      background:linear-gradient(var(--bg), rgba(243,244,246,.92));
+    }
+    .fixed-legend{
+      max-width:720px;
+      margin:0 auto;
+      background:#fff;
+      border-radius:14px;
+      padding:10px 12px;
+      box-shadow:0 4px 12px rgba(0,0,0,.06);
+      display:flex; gap:12px; flex-wrap:wrap;
+      font-size:12px; font-weight:700;
+      border:1px solid rgba(0,0,0,.05);
+    }
+    .legend-item{display:flex;align-items:center;gap:8px}
+    .swatch{
+      width:18px;height:12px;border-radius:4px;border:1px solid rgba(0,0,0,.15);flex:0 0 auto;
+    }
+    .swatch.sun{background:var(--sun)}
+    .swatch.company{background:var(--company)}
+    .swatch.recommended{background:var(--recommended);border-radius:999px;height:16px}
+    .swatch.today{background:#fff;border:2px solid var(--today);height:16px}
     main{padding:12px 14px 100px;max-width:720px;margin:0 auto}
     .card{
       background:var(--card); border-radius:18px; padding:14px;
@@ -63,6 +114,7 @@
       min-height:52px; background:#fff; border:1px solid var(--border); border-radius:14px;
       padding:6px 4px; position:relative; display:flex; align-items:flex-start; justify-content:center;
       font-weight:700; font-size:16px;
+      transition:transform .08s ease;
     }
     .day.empty{background:#f9fafb;color:#d1d5db}
     .day.sunoff{background:var(--sun)}
@@ -72,19 +124,28 @@
       background:rgba(163,230,53,.9); border:2px solid rgba(17,24,39,.55);
       top:50%; left:50%; transform:translate(-50%,-50%); z-index:0;
     }
+    .day.today{
+      outline:3px solid var(--today);
+      outline-offset:2px;
+      box-shadow:0 0 0 4px rgba(255,255,255,.85);
+    }
+    .day.today span{
+      font-size:18px;
+    }
     .day span{position:relative; z-index:1}
     .daylabel{
       position:absolute; bottom:3px; right:4px; font-size:9px; color:#4b5563; font-weight:700;
       z-index:1;
     }
-    .legend{display:grid;grid-template-columns:1fr;gap:8px;font-size:14px}
-    .legend-item{display:flex;align-items:center;gap:10px}
-    .swatch{
-      width:22px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.15);flex:0 0 auto;
+    .today-badge{
+      position:absolute;
+      top:3px; left:4px;
+      font-size:8px;
+      background:#111827; color:#fff;
+      padding:2px 5px;
+      border-radius:999px;
+      z-index:2;
     }
-    .swatch.sun{background:var(--sun)}
-    .swatch.company{background:var(--company)}
-    .swatch.recommended{background:var(--recommended);border-radius:999px;height:18px}
     ul.holidays{margin:10px 0 0;padding-left:18px}
     ul.holidays li{margin:4px 0;line-height:1.5}
     .footer-note{color:var(--muted);font-size:12px;line-height:1.6}
@@ -93,17 +154,34 @@
 <body>
 <header>
   <div class="title">2026年度 勤務カレンダー</div>
-  <div class="sub">祝日でも出勤の日を反映した再構成版</div>
+  <div class="sub">今日の強調 / 月ジャンプ / 固定凡例 / 通知風表示つき</div>
   <div class="toolbar">
     <button id="jumpToday" class="primary">今月へ</button>
+    <select id="monthSelect" aria-label="月を選択">
+      <option value="">月へジャンプ</option>
+    </select>
   </div>
 </header>
+
 <div class="month-tabs" id="monthTabs"></div>
+
+<div class="notice-wrap">
+  <div class="notice" id="noticeBox">読み込み中...</div>
+</div>
+
+<div class="fixed-legend-wrap">
+  <div class="fixed-legend">
+    <div class="legend-item"><span class="swatch today"></span><span>今日</span></div>
+    <div class="legend-item"><span class="swatch sun"></span><span>日曜・休みの祝日</span></div>
+    <div class="legend-item"><span class="swatch company"></span><span>会社独自の休日</span></div>
+    <div class="legend-item"><span class="swatch recommended"></span><span>有給休暇推奨日</span></div>
+  </div>
+</div>
+
 <main id="app"></main>
 
 <script>
 const weekdayLabels = ["日","月","火","水","木","金","土"];
-
 function ymd(y,m,d){ return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
 
 const officialHolidays = {
@@ -179,6 +257,26 @@ const months = [
 
 const app = document.getElementById("app");
 const monthTabs = document.getElementById("monthTabs");
+const monthSelect = document.getElementById("monthSelect");
+const noticeBox = document.getElementById("noticeBox");
+
+function getDayStatus(key){
+  const [y,m,d] = key.split("-").map(Number);
+  const dateObj = new Date(y, m - 1, d);
+  const isSunday = dateObj.getDay() === 0;
+  const isOfficialHoliday = !!officialHolidays[key];
+  const isHolidayWorkday = holidayWorkdays.has(key);
+  const isCompanyOff = companyOff.has(key);
+  const isRecommended = recommended.has(key);
+  const isRedOff = isSunday || (isOfficialHoliday && !isHolidayWorkday);
+
+  let status = "出勤日";
+  if (isCompanyOff) status = "会社休日";
+  else if (isRedOff) status = "休日";
+  else if (isOfficialHoliday && isHolidayWorkday) status = "祝日出勤";
+
+  return { isSunday, isOfficialHoliday, isHolidayWorkday, isCompanyOff, isRecommended, isRedOff, status };
+}
 
 function buildTabs(){
   months.forEach((m, index) => {
@@ -186,32 +284,28 @@ function buildTabs(){
     btn.className = "month-tab";
     btn.id = `tab-${index}`;
     btn.textContent = `${m.month}月`;
-    btn.onclick = () => {
-      document.getElementById(`month-${index}`).scrollIntoView({behavior:"smooth", block:"start"});
-      setActiveTab(index);
-    };
+    btn.onclick = () => jumpToMonth(index);
     monthTabs.appendChild(btn);
+
+    const option = document.createElement("option");
+    option.value = index;
+    option.textContent = `${m.year}年${m.month}月`;
+    monthSelect.appendChild(option);
   });
 }
 
 function setActiveTab(index){
   [...monthTabs.children].forEach((el,i)=>el.classList.toggle("active", i===index));
+  monthSelect.value = String(index);
+}
+
+function jumpToMonth(index){
+  document.getElementById(`month-${index}`)?.scrollIntoView({behavior:"smooth", block:"start"});
+  setActiveTab(index);
 }
 
 function render(){
   app.innerHTML = "";
-  const legend = document.createElement("section");
-  legend.className = "card";
-  legend.innerHTML = `
-    <div class="legend">
-      <div class="legend-item"><span class="swatch sun"></span><span>日曜・休みの祝日</span></div>
-      <div class="legend-item"><span class="swatch company"></span><span>会社独自の休日</span></div>
-      <div class="legend-item"><span class="swatch recommended"></span><span>有給休暇推奨日</span></div>
-    </div>
-    <p class="footer-note">祝日でも白マスの日は出勤日として再現しています。</p>
-  `;
-  app.appendChild(legend);
-
   months.forEach((m, index) => {
     const firstDay = new Date(m.year, m.month - 1, 1);
     const lastDate = new Date(m.year, m.month, 0).getDate();
@@ -240,21 +334,19 @@ function render(){
         ${cells.map(c => {
           if(c.empty) return `<div class="day empty"></div>`;
           const key = ymd(m.year, m.month, c.day);
-          const dateObj = new Date(m.year, m.month - 1, c.day);
-          const isSunday = dateObj.getDay() === 0;
-          const isOfficialHoliday = !!officialHolidays[key];
-          const isHolidayWorkday = holidayWorkdays.has(key);
-          const isCompanyOff = companyOff.has(key);
-          const isRedOff = isSunday || (isOfficialHoliday && !isHolidayWorkday);
-          const isRecommended = recommended.has(key);
-          const label = isOfficialHoliday && isHolidayWorkday ? `<div class="daylabel">祝出</div>` : "";
+          const status = getDayStatus(key);
+          const now = new Date();
+          const isToday = now.getFullYear() === m.year && (now.getMonth()+1) === m.month && now.getDate() === c.day;
+          const label = status.isOfficialHoliday && status.isHolidayWorkday ? `<div class="daylabel">祝出</div>` : "";
+          const todayBadge = isToday ? `<div class="today-badge">今日</div>` : "";
           const cls = [
             "day",
-            isRedOff ? "sunoff" : "",
-            isCompanyOff ? "companyoff" : "",
-            isRecommended ? "recommended" : ""
+            status.isRedOff ? "sunoff" : "",
+            status.isCompanyOff ? "companyoff" : "",
+            status.isRecommended ? "recommended" : "",
+            isToday ? "today" : ""
           ].filter(Boolean).join(" ");
-          return `<div class="${cls}"><span>${c.day}</span>${label}</div>`;
+          return `<div class="${cls}"><span>${c.day}</span>${label}${todayBadge}</div>`;
         }).join("")}
       </div>
       <ul class="holidays">
@@ -273,14 +365,35 @@ function jumpToCurrentFiscalMonth(){
   const now = new Date();
   let index = months.findIndex(m => m.year === now.getFullYear() && m.month === now.getMonth() + 1);
   if(index === -1) index = 0;
-  document.getElementById(`month-${index}`)?.scrollIntoView({behavior:"smooth", block:"start"});
-  setActiveTab(index);
+  jumpToMonth(index);
+}
+
+function updateNotice(){
+  const now = new Date();
+  const key = ymd(now.getFullYear(), now.getMonth()+1, now.getDate());
+  const inAppRange = months.some(m => m.year === now.getFullYear() && m.month === now.getMonth()+1);
+  if(!inAppRange){
+    noticeBox.textContent = `今日は ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日。表示対象外の月です。`;
+    return;
+  }
+  const s = getDayStatus(key);
+  let msg = `今日は ${now.getMonth()+1}月${now.getDate()}日、${s.status}です。`;
+  if (s.isOfficialHoliday) {
+    msg += s.isHolidayWorkday ? ` ${officialHolidays[key]}ですが出勤日です。` : ` ${officialHolidays[key]}です。`;
+  }
+  if (s.isRecommended) msg += ` 有給休暇推奨日です。`;
+  noticeBox.textContent = msg;
 }
 
 buildTabs();
 render();
+updateNotice();
 setActiveTab(0);
+
 document.getElementById("jumpToday").addEventListener("click", jumpToCurrentFiscalMonth);
+monthSelect.addEventListener("change", (e) => {
+  if (e.target.value !== "") jumpToMonth(Number(e.target.value));
+});
 
 const observer = new IntersectionObserver((entries) => {
   const visible = entries.filter(e => e.isIntersecting).sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
@@ -292,6 +405,7 @@ const observer = new IntersectionObserver((entries) => {
 
 window.addEventListener("load", () => {
   document.querySelectorAll('[id^="month-"]').forEach(card => observer.observe(card));
+  jumpToCurrentFiscalMonth();
 });
 </script>
 </body>
